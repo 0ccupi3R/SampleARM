@@ -65,7 +65,7 @@
 
             "sku": {
                 "name": "[parameters('azureDataExplorerSKU')]",
-				"tier": "[parameters('dataExplorerSkuTier')]",
+		"tier": "[parameters('dataExplorerSkuTier')]",
                 "capacity": "[parameters('adxInstanceCount')]"
             },
             "tags": "[parameters('resourceTags')]"
