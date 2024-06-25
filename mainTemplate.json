@@ -37,7 +37,7 @@
     "variables": {
         "AdxName": "[toLower(parameters('azureDataExplorerName'))]",
         "dataExplorerSkuTier": "[if(contains(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'),'Basic','Standard')]",
-        "enableOptimizedAutoscale": "[equals(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2')]"
+        "enableOptimizedAutoscale": "[not(equals(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'))]"
     },
     "resources": [
         {
