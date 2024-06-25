@@ -13,9 +13,12 @@
             "type": "string",
             "defaultValue": "Standard_E4ads_v5",
             "allowedValues": [
-                "Dev(No SLA)_Standard_D11_v2",
-                "Standard_D11_v2",
-                "Standard_E4ads_v5"
+               "Dev(No SLA)_Standard_D11_v2",
+                "Standard_E4ads_v5",
+                "Standard_E2ads_v5",
+                "Standard_E8ads_v5",
+                "Standard_E16ads_v5",
+                "Standard_D32d_v4"
             ],
             "metadata": {
                 "description": "The SKU name of the Azure Data Explorer cluster"
