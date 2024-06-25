@@ -46,7 +46,7 @@
             "properties": {
                 "optimizedAutoscale": {
                     "version": 1,
-                    "isEnabled": "[variables('enableOptimizedAutoscale')]",
+                    "isEnabled": "[bool(variables('enableOptimizedAutoscale'))]",
                     "minimum": 2,
                     "maximum": 3
                 },
@@ -74,7 +74,7 @@
             "sku": {
                 "name": "[parameters('azureDataExplorerSKU')]",
                 "tier": "[variables('dataExplorerSkuTier')]",
-                "capacity": "[parameters('adxInstanceCount')]"
+                "capacity": "[int(parameters('adxInstanceCount'))]"
             },
             "tags": "[parameters('resourceTags')]"
         }
