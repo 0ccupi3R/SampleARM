@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "azureDataExplorerName": {
+            "type": "string",
+            "defaultValue": "adxqueryengine",
+            "metadata": {
+                "description": "Name of the Azure Data Explorer cluster."
+            }
+        },
+        "azureDataExplorerSKU": {
+            "type": "string",
+            "defaultValue": "Standard_E4ads_v5",
+            "allowedValues": [
+                "Dev(No SLA)_Standard_D11_v2",
+                "Standard_D11_v2",
+                "Standard_E4ads_v5"
+            ],
+            "metadata": {
+                "description": "The SKU name of the Azure Data Explorer cluster"
+            }
+        },
+        "dataExplorerSkuTier": {
+            "type": "string",
+            "allowedValues": [ "Basic", "Standard" ],
+            "defaultValue": "Standard",
+            "metadata": {
+                "description": "The SKU tier of the Azure Data Explorer cluster"
+            }
+        },
+        "adxInstanceCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The SKU capacity of the Azure Data Explorer cluster"
+            }
+        },
+        "resourceTags": {
+            "type": "object",
+            "defaultValue": {}
+        }
+    },
+    "variables": {
+        "AdxName": "[toLower(parameters('azureDataExplorerName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Kusto/clusters",
+            "apiVersion": "2023-08-15",
+            "name": "[variables('AdxName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "languageExtensions": [
+                    {
+                        "languageExtensionImageName": "Python3_10_8"
+                    },
+                    {
+                        "languageExtensionImageName": "Python3_6_5"
+                    }
+                ],
+                "publicNetworkAccess": "Enabled",
+                "trustedExternalTenants": [],
+                "enableDoubleEncryption": true
+            },
+
+            "sku": {
+                "name": "[parameters('azureDataExplorerSKU')]",
+				"tier": "[parameters('dataExplorerSkuTier')]",
+                "capacity": "[parameters('adxInstanceCount')]"
+            },
+            "tags": "[parameters('resourceTags')]"
+        }
+    ],
+    "outputs": {}
+}
