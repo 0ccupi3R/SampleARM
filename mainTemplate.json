@@ -21,14 +21,6 @@
                 "description": "The SKU name of the Azure Data Explorer cluster"
             }
         },
-        "dataExplorerSkuTier": {
-            "type": "string",
-            "allowedValues": [ "Basic", "Standard" ],
-            "defaultValue": "Standard",
-            "metadata": {
-                "description": "The SKU tier of the Azure Data Explorer cluster"
-            }
-        },
         "adxInstanceCount": {
             "type": "int",
             "metadata": {
@@ -41,7 +33,9 @@
         }
     },
     "variables": {
-        "AdxName": "[toLower(parameters('azureDataExplorerName'))]"
+        "AdxName": "[toLower(parameters('azureDataExplorerName'))]",
+        "dataExplorerSkuTier": "[if(contains(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'),'Basic','Standard')]",
+        "enableOptimizedAutoscale": "[if(contains(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'),'false','true')]"
     },
     "resources": [
         {
@@ -50,22 +44,36 @@
             "name": "[variables('AdxName')]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "languageExtensions": [
-                    {
-                        "languageExtensionImageName": "Python3_10_8"
-                    },
-                    {
-                        "languageExtensionImageName": "Python3_6_5"
-                    }
-                ],
+                "optimizedAutoscale": {
+                    "version": 1,
+                    "isEnabled": "[variables('enableOptimizedAutoscale')]",
+                    "minimum": 2,
+                    "maximum": 3
+                },
+                "languageExtensions": {
+                    "value": [
+                        {
+                            "languageExtensionName": "PYTHON",
+                            "languageExtensionImageName": "Python3_6_5"
+                        },
+                        {
+                            "languageExtensionName": "PYTHON",
+                            "languageExtensionImageName": "Python3_10_8"
+                        }
+                    ]
+                },
                 "publicNetworkAccess": "Enabled",
                 "trustedExternalTenants": [],
                 "enableDoubleEncryption": true
             },
-
+            "zones": [
+                "1",
+                "3",
+                "2"
+            ],
             "sku": {
                 "name": "[parameters('azureDataExplorerSKU')]",
-		"tier": "[parameters('dataExplorerSkuTier')]",
+                "tier": "[variables('dataExplorerSkuTier')]",
                 "capacity": "[parameters('adxInstanceCount')]"
             },
             "tags": "[parameters('resourceTags')]"
