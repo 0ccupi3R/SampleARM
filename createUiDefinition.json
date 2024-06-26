@@ -24,7 +24,7 @@
 			{
 				"name": "randomNumber",
 				"type": "Microsoft.Common.TextBox",
-				"label": "Random Number",
+				"label": "Random Suffix",
 				"defaultValue": "[rand(100,999)]",
 				"toolTip": "Use lowercase characters. It will be used for resource naming convention.",
 				"visible": true
@@ -58,9 +58,14 @@
 							"required": true,
 							"regex": "^[a-z0-9]{3,24}$",
 							"allowedTypes": [
-								"Premium_LRS",
 								"Standard_LRS",
-								"Standard_GRS"
+								"Standard_GRS",
+								"Standard_RAGRS",
+								"Standard_ZRS",
+								"Premium_LRS",
+								"Premium_ZRS",
+								"Standard_GZRS",
+								"Standard_RAGZRS"
 							]
 						},
 						"visible": true,
