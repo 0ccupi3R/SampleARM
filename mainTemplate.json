@@ -56,6 +56,7 @@
         },
         "adxInstanceCount": {
             "type": "int",
+            "defaultValue": 2,
             "metadata": {
                 "description": "The SKU capacity of the Azure Data Explorer cluster"
             }
