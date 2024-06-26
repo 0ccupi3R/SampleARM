@@ -206,8 +206,8 @@
                 "optimizedAutoscale": {
                     "version": 1,
                     "isEnabled": "[variables('enableOptimizedAutoscale')]",
-                    "minimum": "[int(parameters('adxInstanceCountMin'))]",
-                    "maximum": "[int(parameters('adxInstanceCountMax'))]"
+                    "minimum": "[parameters('adxInstanceCountMin')]",
+                    "maximum": "[parameters('adxInstanceCountMax')]"
                 },
                 "languageExtensions": {
                     "value": [
@@ -229,7 +229,7 @@
             "sku": {
                 "name": "[parameters('azureDataExplorerSKU')]",
                 "tier": "[variables('dataExplorerSkuTier')]",
-                "capacity": "[int(parameters('adxInstanceCountMin'))]"
+                "capacity": "[parameters('adxInstanceCountMin')]"
             },
             "tags": "[parameters('resourceTags')]"
         }
