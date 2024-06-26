@@ -54,11 +54,18 @@
                 "description": "The SKU name of the Azure Data Explorer cluster"
             }
         },
-        "adxInstanceCount": {
+        "adxInstanceCountMin": {
             "type": "int",
             "defaultValue": 2,
             "metadata": {
-                "description": "The SKU capacity of the Azure Data Explorer cluster"
+                "description": "The SKU capacity and Minimum instance of the Azure Data Explorer cluster"
+            }
+        },
+        "adxInstanceCountMax": {
+            "type": "int",
+            "defaultValue": 3,
+            "metadata": {
+                "description": "The SKU capacity and Maximum instance of the Azure Data Explorer cluster"
             }
         },
         "resourceTags": {
@@ -199,8 +206,8 @@
                 "optimizedAutoscale": {
                     "version": 1,
                     "isEnabled": "[variables('enableOptimizedAutoscale')]",
-                    "minimum": 2,
-                    "maximum": 3
+                    "minimum": "[int(parameters('adxInstanceCountMin'))]",
+                    "maximum": "[int(parameters('adxInstanceCountMax'))]"
                 },
                 "languageExtensions": {
                     "value": [
@@ -222,7 +229,7 @@
             "sku": {
                 "name": "[parameters('azureDataExplorerSKU')]",
                 "tier": "[variables('dataExplorerSkuTier')]",
-                "capacity": "[int(parameters('adxInstanceCount'))]"
+                "capacity": "[int(parameters('adxInstanceCountMin'))]"
             },
             "tags": "[parameters('resourceTags')]"
         }
