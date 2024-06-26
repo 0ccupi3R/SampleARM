@@ -1,236 +1,238 @@
 {
-	"$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
-	"handler": "Microsoft.Azure.CreateUIDef",
-	"version": "0.1.2-preview",
-	"parameters": {
-		"config": {
-			"isWizard": false,
-			"basics": {}
-		},
-		"basics": [
-			{
-				"name": "customerName",
-				"type": "Microsoft.Common.TextBox",
-				"label": "Customer Name",
-				"defaultValue": "zakro",
-				"toolTip": "Use lowercase characters. It will be used for resource naming convention.",
-				"visible": true
-			},
-			{
-				"name": "enableADX",
-				"type": "Microsoft.Common.CheckBox",
-				"label": "Enable Azure Data Explorer",
-				"defaultValue": false,
-				"constraints": {
-					"required": false
-				}
-			},
-			{
-				"name": "randomNumber",
-				"type": "Microsoft.Common.TextBox",
-				"label": "Random Suffix",
-				"defaultValue": "[rand(100,999)]",
-				"toolTip": "Use lowercase characters. It will be used for resource naming convention.",
-				"visible": true
-			}
-		],
-		"steps": [
-			{
-				"name": "AzureDataLakeSettings",
-				"label": "Azure Data Lake Gen2",
-				"subLabel": {
-					"preValidation": "Configure the Azure data lake storage account",
-					"postValidation": "Completed"
-				},
-				"elements": [
-					{
-						"name": "storageAccountName",
-						"type": "Microsoft.Storage.MultiStorageAccountCombo",
-						"label": {
-							"prefix": "Storage Account Name",
-							"type": "Storage Account Type (SKU)"
-						},
-						"toolTip": {
-							"prefix": "Enter maximum of 11 lowercase letters or numbers.",
-							"type": "Available choices are Standard_LRS, Standard_GRS, and Premium_LRS."
-						},
-						"defaultValue": {
-							"type": "Standard_LRS",
-							"prefix": "[concat('saadlsdata',string(basics('randomNumber')))]"
-						},
-						"constraints": {
-							"required": true,
-							"regex": "^[a-z0-9]{3,24}$",
-							"allowedTypes": [
-								"Standard_LRS",
-								"Standard_GRS",
-								"Standard_RAGRS",
-								"Standard_ZRS",
-								"Premium_LRS",
-								"Premium_ZRS",
-								"Standard_GZRS",
-								"Standard_RAGZRS"
-							]
-						},
-						"visible": true,
-						"count": 1
-					}
-				]
-			},
-			{
-				"name": "AzureDataExplorerSettings",
-				"label": "Azure Data Explorer Settings",
-				"subLabel": {
-					"preValidation": "Configure the Azure Data Explorer",
-					"postValidation": "Successfully deployed ADX"
-				},
-				"visible": "[basics('enableADX')]",
-				"elements": [
-					{
-						"name": "WarningMessageADX",
-						"type": "Microsoft.Common.InfoBox",
-						"visible": "[equals(basics('enableADX'),false)]",
-						"options": {
-							"icon": "None",
-							"text": "The Azure Data Explorer will not get deployed. Please go back and tick the checkbox in Basics tab."
-						}
-					},
-					{
-						"name": "azureDataExplorerName",
-						"type": "Microsoft.Common.TextBox",
-						"label": "Azure Data Explorer Name",
-						"placeholder": "Enter Azure Data Explorer Name",
-						"defaultValue": "[concat('adxqueryengine',string(basics('randomNumber')))]",
-						"toolTip": "Use alphanumeric characters or hyphens with a maximum of 40 characters.",
-						"constraints": {
-							"required": "[basics('enableADX')]",
-							"regex": "^[a-z0-9A-Z-]{1,40}$",
-							"validationMessage": "Only alphanumeric characters or hyphens are allowed, with a maximum of 40 characters."
-						},
-						"visible": "[basics('enableADX')]"
-					},
-					{
-						"name": "azureDataExplorerSKU",
-						"type": "Microsoft.Common.DropDown",
-						"label": "Azure Data Explorer Type (SKU)",
-						"defaultValue": "Standard_E4ads_v5",
-						"multiselect": false,
-						"toolTip": "Select the SKU/Capacity for your ADX instance",
-						"constraints": {
-							"allowedValues": [
-								{
-									"label": "Standard_E2ads_v5 (2vCPU, 16GB, 55GB)",
-									"value": "Standard_E2ads_v5",
-									"description": "This standard tier has 2 core vCPU, 16GB RAM, and 55GB cache."
-								},
-								{
-									"label": "Standard_E4ads_v5 (4vCPU, 32GB, 116GB)",
-									"value": "Standard_E4ads_v5",
-									"description": "This standard tier has 4 core vCPU, 32GB RAM, and 116GB cache."
-								},
-								{
-									"label": "Standard_E8ads_v5 (8vCPU, 64GB, 240GB)",
-									"value": "Standard_E8ads_v5",
-									"description": "This standard tier has 8 core vCPU, 64GB RAM, and 240GB cache."
-								},
-								{
-									"label": "Standard_E16ads_v5 (16vCPU, 128GB, 485GB)",
-									"value": "Standard_E16ads_v5",
-									"description": "This standard tier has 16 core vCPU, 128GB RAM, and 485GB cache."
-								},
-								{
-									"label": "Dev_Standard_D11_v2 (2vCPU, 14GB, 78GB)",
-									"value": "Dev(No SLA)_Standard_D11_v2",
-									"description": "This development tier (Dev no SLA) has 2 core vCPU, 14GB RAM, and 78GB cache."
-								},
-								{
-									"label": "Standard_D32d_v4 (32vCPU, 128GB, 976GB)",
-									"value": "Standard_D32d_v4",
-									"description": "This standard tier has 32 core vCPU, 128GB RAM, and 976GB cache."
-								}
-							],
-							"required": "[basics('enableADX')]"
-						},
-						"visible": "[basics('enableADX')]"
-					},
-					{
-						"name": "adxInstanceCountMin",
-						"type": "Microsoft.Common.Slider",
-						"description": "Default instance count for Dev is 1.",
-						"min": 2,
-						"max": 49,
-						"defaultValue": 2,
-						"label": "Azure Data Explorer Instance (Min)",
-						"showStepMarkers": true,
-						"toolTip": "Select the number of initial ADX instances [1-50]",
-						"constraints": {
-							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
-						},
-						"visible": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
-					},
-					{
-						"name": "adxInstanceCountMax",
-						"type": "Microsoft.Common.Slider",
-						"description": "Default instance count for Dev is 1.",
-						"min": 3,
-						"max": 50,
-						"defaultValue": 3,
-						"label": "Azure Data Explorer Instance (Max)",
-						"showStepMarkers": true,
-						"toolTip": "Select the number of initial ADX instances [1-50]",
-						"constraints": {
-							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
-						},
-						"visible": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
-					},
-					{
-						"name": "Validation",
-						"type": "Microsoft.Common.InfoBox",
-						"constraints": {
-							"validations": [
-								{
-									"isValid": "[lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMin),int(steps('AzureDataExplorerSettings').adxInstanceCountMax))]"								}
-							],
-							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
-						},
-						"visible": "[and(if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false),lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMax),int(steps('AzureDataExplorerSettings').adxInstanceCountMin)))]",
-						"options": {
-							"icon": "https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10185-warning-sign.png",
-							"text": "[concat('Validation Error : Maximum count can not be lower than Minimum count. Default maximum count is set to : ', string(add(steps('AzureDataExplorerSettings').adxInstanceCountMin,1)))]"
-						}
-					}
-				]
-			},
-			{
-				"name": "Tags",
-				"label": "Tags",
-				"subLabel": {
-					"preValidation": "Add required tags for resources.",
-					"postValidation": "Completed"
-				},
-				"visible": true,
-				"elements": [
-					{
-						"name": "resourceTags",
-						"type": "Microsoft.Common.TagsByResource",
-						"resources": [
-							"Microsoft.Storage/storageAccounts",
-							"Microsoft.Kusto/clusters"
-						]
-					}
-				]
-			}
-		],
-		"outputs": {
-			"location": "[location()]",
-			"resourceGroup": "[resourceGroup().name]",
-			"resourceTags": "[steps('Tags').resourceTags]",
-			"azureDataExplorerName": "[steps('AzureDataExplorerSettings').azureDataExplorerName]",
-			"adxInstanceCountMin": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMin)]",
-			"adxInstanceCountMax": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMax)]",
-			"azureDataExplorerSKU": "[steps('AzureDataExplorerSettings').azureDataExplorerSKU]",
-			"storageAccountNamePrefix": "[steps('AzureDataLakeSettings').storageAccountName.prefix]",
-			"storageAccountType": "[steps('AzureDataLakeSettings').storageAccountName.defaultValue.type]"
-		}
-	}
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountNamePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Azure Data Lake (Storage Account Name)."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS",
+                "Standard_ZRS",
+                "Premium_LRS",
+                "Premium_ZRS",
+                "Standard_GZRS",
+                "Standard_RAGZRS"
+            ],
+            "metadata": {
+                "description": "Type of the Azure Data Lake (Storage Account Name)."
+            }
+        },
+        "retentionDays": {
+            "type": "int",
+            "defaultValue": 7,
+            "metadata": {
+                "description": "Number of days to retain deteted data (Delete Retention Policy)"
+            }
+        },
+        "azureDataExplorerName": {
+            "type": "string",
+            "defaultValue": "adxqueryengine",
+            "metadata": {
+                "description": "Name of the Azure Data Explorer cluster."
+            }
+        },
+        "azureDataExplorerSKU": {
+            "type": "string",
+            "defaultValue": "Standard_E4ads_v5",
+            "allowedValues": [
+                "Dev(No SLA)_Standard_D11_v2",
+                "Standard_D32d_v4",
+                "Standard_E2ads_v5",
+                "Standard_E4ads_v5",
+                "Standard_E8ads_v5",
+                "Standard_E16ads_v5"
+            ],
+            "metadata": {
+                "description": "The SKU name of the Azure Data Explorer cluster"
+            }
+        },
+        "adxInstanceCountMin": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "The SKU capacity and Minimum instance of the Azure Data Explorer cluster"
+            }
+        },
+        "adxInstanceCountMax": {
+            "type": "int",
+            "defaultValue": 3,
+            "metadata": {
+                "description": "The SKU capacity and Maximum instance of the Azure Data Explorer cluster"
+            }
+        },
+        "resourceTags": {
+            "type": "object",
+            "defaultValue": {}
+        }
+    },
+    "variables": {
+        "AdlsName": "[toLower(parameters('storageAccountNamePrefix'))]",
+        "AdxName": "[toLower(parameters('azureDataExplorerName'))]",
+        "dataExplorerSkuTier": "[if(contains(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'),'Basic','Standard')]",
+        "enableOptimizedAutoscale": "[not(equals(parameters('azureDataExplorerSKU'),'Dev(No SLA)_Standard_D11_v2'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-04-01",
+            "name": "[variables('AdlsName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "isHnsEnabled": true,
+                "minimumTlsVersion": "TLS1_2",
+                "accessTier": "Hot",
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "blob": {
+                            "enabled": true
+                        },
+                        "file": {
+                            "enabled": true
+                        },
+                        "table": {
+                            "enabled": true,
+                            "keyType": "Account"
+                        },
+                        "queue": {
+                            "enabled": true,
+                            "keyType": "Account"
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                }
+            },
+            "tags": "[parameters('resourceTags')]"
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2023-04-01",
+            "name": "[concat(variables('AdlsName'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('AdlsName'))]"
+            ],
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "properties": {
+                "containerDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionDays')]"
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": true,
+                    "days": "[parameters('retentionDays')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2023-04-01",
+            "name": "[concat(variables('AdlsName'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('AdlsName'))]"
+            ],
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('retentionDays')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2023-04-01",
+            "name": "[concat(variables('AdlsName'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('AdlsName'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2023-04-01",
+            "name": "[concat(variables('AdlsName'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('AdlsName'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Kusto/clusters",
+            "apiVersion": "2023-08-15",
+            "name": "[variables('AdxName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "optimizedAutoscale": {
+                    "version": 1,
+                    "isEnabled": "[variables('enableOptimizedAutoscale')]",
+                    "minimum": "[parameters('adxInstanceCountMin')]",
+                    "maximum": "[parameters('adxInstanceCountMax')]"
+                },
+                "languageExtensions": {
+                    "value": [
+                        {
+                            "languageExtensionName": "PYTHON",
+                            "languageExtensionImageName": "Python3_6_5"
+                        }
+                    ]
+                },
+                "publicNetworkAccess": "Enabled",
+                "trustedExternalTenants": [],
+                "enableDoubleEncryption": true
+            },
+            "zones": [
+                "1",
+                "3",
+                "2"
+            ],
+            "sku": {
+                "name": "[parameters('azureDataExplorerSKU')]",
+                "tier": "[variables('dataExplorerSkuTier')]",
+                "capacity": "[parameters('adxInstanceCountMin')]"
+            },
+            "tags": "[parameters('resourceTags')]"
+        }
+    ],
+    "outputs": {}
 }
