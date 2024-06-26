@@ -3,6 +3,10 @@
 	"handler": "Microsoft.Azure.CreateUIDef",
 	"version": "0.1.2-preview",
 	"parameters": {
+		"config": {
+			"isWizard": false,
+			"basics": {}
+		},
 		"basics": [
 			{
 				"name": "customerName",
@@ -44,7 +48,7 @@
 						"type": "Microsoft.Storage.MultiStorageAccountCombo",
 						"label": {
 							"prefix": "Storage Account Name",
-							"type": "Storage Account Type"
+							"type": "Storage Account Type (SKU)"
 						},
 						"toolTip": {
 							"prefix": "Enter maximum of 11 lowercase letters or numbers.",
@@ -99,7 +103,7 @@
 						"defaultValue": "[concat('adxqueryengine',string(basics('randomNumber')))]",
 						"toolTip": "Use alphanumeric characters or hyphens with a maximum of 40 characters.",
 						"constraints": {
-							"required": true,
+							"required": "[basics('enableADX')]",
 							"regex": "^[a-z0-9A-Z-]{1,40}$",
 							"validationMessage": "Only alphanumeric characters or hyphens are allowed, with a maximum of 40 characters."
 						},
@@ -108,7 +112,7 @@
 					{
 						"name": "azureDataExplorerSKU",
 						"type": "Microsoft.Common.DropDown",
-						"label": "SKU",
+						"label": "Azure Data Explorer Type (SKU)",
 						"defaultValue": "Standard_E4ads_v5",
 						"multiselect": false,
 						"toolTip": "Select the SKU/Capacity for your ADX instance",
@@ -145,24 +149,55 @@
 									"description": "This standard tier has 32 core vCPU, 128GB RAM, and 976GB cache."
 								}
 							],
-							"required": true
+							"required": "[basics('enableADX')]"
 						},
 						"visible": "[basics('enableADX')]"
 					},
 					{
-						"name": "adxInstanceCount",
+						"name": "adxInstanceCountMin",
 						"type": "Microsoft.Common.Slider",
 						"description": "Default instance count for Dev is 1.",
-						"min": 1,
-						"max": 50,
-						"label": "Azure Data Explorer Instance Count",
-						"defaultValue": 1,
+						"min": 2,
+						"max": 49,
+						"defaultValue": 2,
+						"label": "Azure Data Explorer Instance (Min)",
 						"showStepMarkers": true,
-						"toolTip": "Select the number of ADX instances",
+						"toolTip": "Select the number of initial ADX instances [1-50]",
 						"constraints": {
-							"required": true
+							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
 						},
 						"visible": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
+					},
+					{
+						"name": "adxInstanceCountMax",
+						"type": "Microsoft.Common.Slider",
+						"description": "Default instance count for Dev is 1.",
+						"min": 3,
+						"max": 50,
+						"defaultValue": 3,
+						"label": "Azure Data Explorer Instance (Max)",
+						"showStepMarkers": true,
+						"toolTip": "Select the number of initial ADX instances [1-50]",
+						"constraints": {
+							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
+						},
+						"visible": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
+					},
+					{
+						"name": "Validation",
+						"type": "Microsoft.Common.InfoBox",
+						"constraints": {
+							"validations": [
+								{
+									"isValid": "[lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMin),int(steps('AzureDataExplorerSettings').adxInstanceCountMax))]"								}
+							],
+							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
+						},
+						"visible": "[and(if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false),lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMax),int(steps('AzureDataExplorerSettings').adxInstanceCountMin)))]",
+						"options": {
+							"icon": "https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10185-warning-sign.png",
+							"text": "[concat('Validation Error : Maximum count can not be lower than Minimum count. Default maximum count is set to : ', string(add(steps('AzureDataExplorerSettings').adxInstanceCountMin,1)))]"
+						}
 					}
 				]
 			},
@@ -191,7 +226,8 @@
 			"resourceGroup": "[resourceGroup().name]",
 			"resourceTags": "[steps('Tags').resourceTags]",
 			"azureDataExplorerName": "[steps('AzureDataExplorerSettings').azureDataExplorerName]",
-			"adxInstanceCount": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCount)]",
+			"adxInstanceCountMin": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMin)]",
+			"adxInstanceCountMax": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMax)]",
 			"azureDataExplorerSKU": "[steps('AzureDataExplorerSettings').azureDataExplorerSKU]",
 			"storageAccountNamePrefix": "[steps('AzureDataLakeSettings').storageAccountName.prefix]",
 			"storageAccountType": "[steps('AzureDataLakeSettings').storageAccountName.defaultValue.type]"
