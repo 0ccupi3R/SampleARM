@@ -230,7 +230,7 @@
 			"adxInstanceCountMax": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMax)]",
 			"azureDataExplorerSKU": "[steps('AzureDataExplorerSettings').azureDataExplorerSKU]",
 			"storageAccountNamePrefix": "[steps('AzureDataLakeSettings').storageAccountName.prefix]",
-			"storageAccountType": "[steps('AzureDataLakeSettings').storageAccountName.type]"
+			"storageAccountType": "[steps('AzureDataLakeSettings').storageAccountName.defaultValue.type]"
 		}
 	}
 }
