@@ -121,7 +121,7 @@
                     "defaultAction": "Allow"
                 }
             },
-            "tags": "[parameters('resourceTags')]"
+            "tags": "[if(contains(parameters('resourceTags'), 'Microsoft.Storage/storageAccounts'), parameters('resourceTags')['Microsoft.Storage/storageAccounts'], json('{}'))]"
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
