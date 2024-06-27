@@ -224,7 +224,6 @@
 		"outputs": {
 			"location": "[location()]",
 			"resourceGroup": "[resourceGroup().name]",
-			"resourceTags": "[steps('Tags').resourceTags]",
 			"azureDataExplorerName": "[steps('AzureDataExplorerSettings').azureDataExplorerName]",
 			"adxInstanceCountMin": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMin)]",
 			"adxInstanceCountMax": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMax)]",
