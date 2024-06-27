@@ -231,7 +231,7 @@
                 "tier": "[variables('dataExplorerSkuTier')]",
                 "capacity": "[int(parameters('adxInstanceCountMin'))]"
             },
-            "tags": "[parameters('resourceTags')]"
+            "tags": "[if(contains(parameters('tagsByResource'), 'Microsoft.Kusto/Clusters'), parameters('tagsByResource')['Microsoft.Kusto/Clusters'], json('{}'))]"
         }
     ],
     "outputs": {}
