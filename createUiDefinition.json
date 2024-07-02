@@ -5,9 +5,55 @@
 	"parameters": {
 		"config": {
 			"isWizard": false,
-			"basics": {}
+			"basics": {
+				"description": "**Azure Data Lake and Azure Data Explorer** deployment.",
+				"location": {
+					"label": "Azure Region",
+					"defaultValue": "canadacentral",
+					"toolTip": "Select the Azure region where resources will be created.",
+					"resourceTypes": [
+						"Microsoft.Storage/storageAccounts",
+						"Microsoft.Kusto/clusters"
+					]
+				}
+			}
 		},
 		"basics": [
+			{
+				"name": "randomNumber",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Random Suffix",
+				"defaultValue": "[string(rand(100,999))]",
+				"toolTip": "Use lowercase characters. It will be used for resource naming convention.",
+				"visible": true
+			},
+			{
+				"name": "rgInfo",
+				"type": "Microsoft.Common.InfoBox",
+				"visible": true,
+				"options": {
+					"text": "Its recommended to keep separate Resource Group for Azure Data Lake and Azure Data Explorer.",
+					"style": "Info"
+				}
+			},
+			{
+				"name": "adlsRgName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Resource Group Name for Azure Data Lake",
+				"placeholder": "e.g. rg-adls-prod-001",
+				"defaultValue": "[concat('rg-adls-prod-', basics('randomNumber'))]",
+				"toolTip": "Enter a resource group name for Azure Data Lake.",
+				"visible": true
+			},
+			{
+				"name": "adxRgName",
+				"type": "Microsoft.Common.TextBox",
+				"label": "Resource Group Name for Azure Data Explorer",
+				"placeholder": "e.g. rg-adx-prod-001",
+				"defaultValue": "[concat('rg-adx-prod-', basics('randomNumber'))]",
+				"toolTip": "Enter a resource group name for Azure Data Explorer.",
+				"visible": true
+			},
 			{
 				"name": "customerName",
 				"type": "Microsoft.Common.TextBox",
@@ -20,18 +66,10 @@
 				"name": "enableADX",
 				"type": "Microsoft.Common.CheckBox",
 				"label": "Enable Azure Data Explorer",
-				"defaultValue": false,
+				"defaultValue": true,
 				"constraints": {
 					"required": false
 				}
-			},
-			{
-				"name": "randomNumber",
-				"type": "Microsoft.Common.TextBox",
-				"label": "Random Suffix",
-				"defaultValue": "[rand(100,999)]",
-				"toolTip": "Use lowercase characters. It will be used for resource naming convention.",
-				"visible": true
 			}
 		],
 		"steps": [
@@ -43,6 +81,15 @@
 					"postValidation": "Completed"
 				},
 				"elements": [
+					{
+						"name": "adlsRgInfo",
+						"type": "Microsoft.Common.InfoBox",
+						"visible": true,
+						"options": {
+							"text": "[concat('The Azure Data Lake is using resource group - ', basics('adlsRgName'))]",
+							"style": "Info"
+						}
+					},
 					{
 						"name": "storageAccountName",
 						"type": "Microsoft.Storage.MultiStorageAccountCombo",
@@ -56,7 +103,7 @@
 						},
 						"defaultValue": {
 							"type": "Standard_LRS",
-							"prefix": "[concat('saadlsdata',string(basics('randomNumber')))]"
+							"prefix": "[concat('saadlsdata', basics('randomNumber'))]"
 						},
 						"constraints": {
 							"required": true,
@@ -96,11 +143,20 @@
 						}
 					},
 					{
+						"name": "adxRgInfo",
+						"type": "Microsoft.Common.InfoBox",
+						"visible": "[basics('enableADX')]",
+						"options": {
+							"text": "[concat('The Azure Data Explorer is using resource group - ', basics('adxRgName'))]",
+							"style": "Info"
+						}
+					},
+					{
 						"name": "azureDataExplorerName",
 						"type": "Microsoft.Common.TextBox",
 						"label": "Azure Data Explorer Name",
 						"placeholder": "Enter Azure Data Explorer Name",
-						"defaultValue": "[concat('adxqueryengine',string(basics('randomNumber')))]",
+						"defaultValue": "[concat('adxqueryengine', basics('randomNumber'))]",
 						"toolTip": "Use alphanumeric characters or hyphens with a maximum of 40 characters.",
 						"constraints": {
 							"required": "[basics('enableADX')]",
@@ -189,7 +245,8 @@
 						"constraints": {
 							"validations": [
 								{
-									"isValid": "[lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMin),int(steps('AzureDataExplorerSettings').adxInstanceCountMax))]"								}
+									"isValid": "[lessOrEquals(int(steps('AzureDataExplorerSettings').adxInstanceCountMin),int(steps('AzureDataExplorerSettings').adxInstanceCountMax))]"
+								}
 							],
 							"required": "[if(startsWith(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Standard_'),true,false)]"
 						},
@@ -223,7 +280,8 @@
 		],
 		"outputs": {
 			"location": "[location()]",
-			"resourceGroup": "[resourceGroup().name]",
+			"adxRgName": "[basics('adxRgName')]",
+			"adlsRgName": "[basics('adlsRgName')]",
 			"azureDataExplorerName": "[steps('AzureDataExplorerSettings').azureDataExplorerName]",
 			"adxInstanceCountMin": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMin)]",
 			"adxInstanceCountMax": "[if(contains(steps('AzureDataExplorerSettings').azureDataExplorerSKU,'Dev(No SLA)_Standard_D11_v2'),1,steps('AzureDataExplorerSettings').adxInstanceCountMax)]",
