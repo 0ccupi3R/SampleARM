@@ -300,5 +300,21 @@
 
     ],
     "outputs": {
+        "rgAzureDataLake": {
+            "type": "string",
+            "value": "[parameters('adlsRgName')]"
+        },
+        "rgAzureDataExplorer": {
+            "type": "string",
+            "value": "[parameters('adxRgName')]"
+        },
+        "adxName": {
+            "type": "string",
+            "value": "[variables('AdxName')]"
+        },
+        "adlsName": {
+            "type": "string",
+            "value": "[variables('AdlsName')]"
+        }
     }
 }
