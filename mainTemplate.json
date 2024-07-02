@@ -75,11 +75,13 @@
             }
         },
         "location": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "canadacentral"
         },
 
         "enableAdx": {
-            "type": "bool"
+            "type": "bool",
+            "defaultValue": true
         },
         "resourceTags": {
             "type": "object",
@@ -114,6 +116,9 @@
             "name": "AzureDataLakeDeployment",
             "resourceGroup": "[parameters('adlsRgName')]",
             "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "mode": "Incremental",
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -244,11 +249,15 @@
             ]
         },
         {
+            "condition": "[parameters('enableAdx')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2022-09-01",
             "name": "AzureDataExplorerDeployment",
             "resourceGroup": "[parameters('adlsRgName')]",
             "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "mode": "Incremental",
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
